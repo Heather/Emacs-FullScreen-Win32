@@ -25,6 +25,21 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
+/*
+  HOW TO USE
+  ----------
+  1. Add the following lines to your .emacs file:
+  (defun switch-full-screen () (interactive) (shell-command "emacs_fullscreen.exe"))
+  (global-set-key [f11] 'switch-full-screen)
+
+  2. Compile main.c to the folder in your PATH (I use Windows/system32).
+
+  3. Now run Emacs and press F11 to switch into full-screen mode.
+  Press F11 again to switch to windowed mode.
+ */
+
+
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <windows.h>
