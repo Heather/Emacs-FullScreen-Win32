@@ -54,7 +54,7 @@
 
 /* Full-screen-mode styles for Emacs' window. */
 #define EMACS_FULLSCREEN_STYLE (WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE | WS_POPUP)
-#define EMACS_FULLSCREEN_STYLE_EX 0x0
+#define EMACS_FULLSCREEN_STYLE_EX WS_EX_TOPMOST
 
 INT CALLBACK WinMain(HINSTANCE h_instance, HINSTANCE h_prev_instance, LPSTR cmd_line, int cmd_show)
 {
@@ -64,6 +64,8 @@ INT CALLBACK WinMain(HINSTANCE h_instance, HINSTANCE h_prev_instance, LPSTR cmd_
   HWND emacs_window = FindWindowW(EMACS_CLASS_NAME, NULL);
   if (emacs_window)
     {
+      HWND insert_after = NULL;
+
       /* If window is in full-screen mode, then it will be maximized. Clear WS_MAXIMIZE bit and then compare styles. */
       current_style = GetWindowLongPtrW(emacs_window, GWL_STYLE);
       current_style ^= WS_MAXIMIZE;
@@ -72,16 +74,18 @@ INT CALLBACK WinMain(HINSTANCE h_instance, HINSTANCE h_prev_instance, LPSTR cmd_
 	{
 	  style = EMACS_WINDOWED_STYLE;
 	  style_ex = EMACS_WINDOWED_STYLE_EX;
+	  insert_after = HWND_NOTOPMOST;
 	}
       else
 	{
 	  style = EMACS_FULLSCREEN_STYLE;
 	  style_ex = EMACS_FULLSCREEN_STYLE_EX;
+	  insert_after = HWND_TOPMOST;
 	}
 
       SetWindowLongPtrW(emacs_window, GWL_STYLE, style);
       SetWindowLongPtrW(emacs_window, GWL_EXSTYLE, style_ex);
-      SetWindowPos(emacs_window, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+      SetWindowPos(emacs_window, insert_after, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
       ShowWindowAsync(emacs_window, SW_MAXIMIZE);
     }
   else
