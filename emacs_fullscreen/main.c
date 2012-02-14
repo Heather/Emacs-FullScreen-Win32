@@ -43,6 +43,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <windows.h>
+#include <shellapi.h>
+
+#define CMD_TOPMOST L"--topmost"
 
 #define EMACS_CLASS_NAME L"Emacs"
 
@@ -54,18 +57,54 @@
 
 /* Full-screen-mode styles for Emacs' window. */
 #define EMACS_FULLSCREEN_STYLE (WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE | WS_POPUP)
-#define EMACS_FULLSCREEN_STYLE_EX WS_EX_TOPMOST
+#define EMACS_FULLSCREEN_STYLE_EX 0x0
+
+/* Parses command line and returns TRUE if it contains --topmost switch. */
+BOOL is_topmost_requested()
+{
+  BOOL result = FALSE;
+  LPWSTR *args = NULL;
+  INT args_count = 0;
+  INT i = 0;
+
+  args = CommandLineToArgvW(GetCommandLineW(), &args_count);
+  if (NULL == args)
+    {
+      /* Failed to get command line arguments. Assuming that there is no --topmost command line switch. */
+    }
+  else
+    {
+      /* Find --topmost command line switch. */
+      for (i = 0; i < args_count; ++i)
+	{
+	  if (0 == _wcsicmp(args[i], CMD_TOPMOST))
+	    {
+	      /* Found. Exit from loop. */
+	      result = TRUE;
+	      break;
+	    }
+	    else
+	      {
+		/* Not found. Continue. */
+	      }
+	}
+    }
+
+  LocalFree(args);
+  return result;
+}
 
 INT CALLBACK WinMain(HINSTANCE h_instance, HINSTANCE h_prev_instance, LPSTR cmd_line, int cmd_show)
 {
   LONG current_style = 0; /* Current style of the emacs window. */
   LONG style = 0; /* New style of the emacs window. */
   LONG style_ex = 0; /* New extended style of the emacs window. */
+  HWND insert_after = NULL;
   HWND emacs_window = FindWindowW(EMACS_CLASS_NAME, NULL);
+  BOOL topmost_requested = is_topmost_requested();
+
   if (emacs_window)
     {
-      HWND insert_after = NULL;
-
       /* If window is in full-screen mode, then it will be maximized. Clear WS_MAXIMIZE bit and then compare styles. */
       current_style = GetWindowLongPtrW(emacs_window, GWL_STYLE);
       current_style ^= WS_MAXIMIZE;
@@ -74,13 +113,21 @@ INT CALLBACK WinMain(HINSTANCE h_instance, HINSTANCE h_prev_instance, LPSTR cmd_
 	{
 	  style = EMACS_WINDOWED_STYLE;
 	  style_ex = EMACS_WINDOWED_STYLE_EX;
-	  insert_after = HWND_NOTOPMOST;
+	  if (topmost_requested)
+	    {
+	      style_ex |= WS_EX_TOPMOST;
+	      insert_after = HWND_NOTOPMOST;
+	    }
 	}
       else
 	{
 	  style = EMACS_FULLSCREEN_STYLE;
 	  style_ex = EMACS_FULLSCREEN_STYLE_EX;
-	  insert_after = HWND_TOPMOST;
+	  if (topmost_requested)
+	    {
+	      style_ex |= WS_EX_TOPMOST;
+	      insert_after = HWND_TOPMOST;
+	    }
 	}
 
       SetWindowLongPtrW(emacs_window, GWL_STYLE, style);
