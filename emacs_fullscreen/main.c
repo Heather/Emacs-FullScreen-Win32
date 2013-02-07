@@ -56,7 +56,7 @@
 				 WS_EX_WINDOWEDGE)
 
 /* Full-screen-mode styles for Emacs' window. */
-#define EMACS_FULLSCREEN_STYLE (WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE | WS_POPUP)
+#define EMACS_FULLSCREEN_STYLE (WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE | WS_SYSMENU | WS_THICKFRAME | WS_POPUP | WS_EX_WINDOWEDGE)
 #define EMACS_FULLSCREEN_STYLE_EX 0x0
 
 /* Parses command line and returns TRUE if it contains --topmost switch. */
